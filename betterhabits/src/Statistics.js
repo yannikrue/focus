@@ -10,10 +10,15 @@ const Statistics = () => {
   const [name, setName] = useState([]);
   const navigation = useNavigation();
 
+  
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <Text>Statistics page</Text>
+      </View>
       <Footer />
-    </SafeAreaView>
+    </View>
   )
 }
 
@@ -23,18 +28,9 @@ const styles = StyleSheet.create({
   container: {
     flex:1,  
     alignItems:'center',
-    marginTop:100,
   },
-  footer: {
+  content: {
     flex: 1,
-    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'flex-end'
-  },
-  footerButtons: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'baseline'
   },
 })
