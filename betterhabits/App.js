@@ -28,8 +28,8 @@ function App() {
 
   if (initializing) return null;
 
-    if (false){
-//  if (!user) {
+    //if (false){
+  if (!user) {
     return (
       <Stack.Navigator>
       <Stack.Screen

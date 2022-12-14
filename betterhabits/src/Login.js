@@ -5,15 +5,16 @@ import { firebase } from '../config'
 
 const Login = () => {
     const navigation = useNavigation()
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [email, setEmail] = useState("yannik.rue@gmail.com")
+    const [password, setPassword] = useState("nkl02Zitabetterhabits")
 
     loginUser = async (email,password) => {
-        try{
-            await firebase.auth().signInWithEmailAndPassword(email,password)
-        } catch (error){
-          alert(error)
-        }
+      // take out password
+      try{
+          await firebase.auth().signInWithEmailAndPassword(email,password)
+      } catch (error){
+        alert(error)
+      }
     }
 
     // forget password

@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'flex-end',
-      backgroundColor: 'yellow',
       marginBottom: 25,
     },
     buttons: {
