@@ -5,8 +5,8 @@ import { firebase } from '../config'
 
 const Login = () => {
     const navigation = useNavigation()
-    const [email, setEmail] = useState("yannik.rue@gmail.com")
-    const [password, setPassword] = useState("nkl02Zitabetterhabits")
+    const [email, setEmail] = useState()
+    const [password, setPassword] = useState()
 
     loginUser = async (email,password) => {
       // take out password
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     marginTop:50,
     height:70,
     width:250,
-    backgroundColor:'#026efd',
+    backgroundColor:'#8AB6A9',
     alignItems:'center',
     justifyContent:'center',
     borderRadius:50,
