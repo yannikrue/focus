@@ -31,37 +31,3 @@ const panResponder = PanResponder.create({
   }}
   >
     <View style={
-
-
-
-
-
-const arr1 = [
-  {
-    "habit1": 7,
-  },
-  {
-    "habit2": 7,
-  },
-  {
-    "habit3": "7",
-  },
-];
-
-const arr2 = [
-  {
-    "habit1": false,
-  },
-  {
-    "habit2": true,
-  },
-];
-
-const arr3 = arr1.map(obj => {
-  // Die Angewohnheit des aktuellen Objekts aus arr1
-  const habit = Object.keys(obj)[0];
-
-  // Der Wert der Angewohnheit im zweiten Array
-  const value = arr2.find(o => Object.keys(o)[0] === habit);
-
-  // Wenn der Wert gefunden wurde, wird er verwendet, ansonsten ist der
