@@ -3,6 +3,8 @@ import React,{useState, useEffect} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { firebase } from '../config';
 import {Picker} from '@react-native-picker/picker';
+import DraggableFlatList from 'react-native-draggable-flatlist';
+
 
 import Footer from '../components/Footer';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
@@ -11,7 +13,7 @@ let currentDate = new Date();
 let date = new Date();
 let formatedDate;
 
-date.setDate(date.getDate()-2);
+date.setDate(date.getDate());
 
 const Habits = () => {
   const [name, setName] = useState([]);
@@ -39,21 +41,37 @@ const Habits = () => {
     renderContent();
   }, [menu]);
 
-  const renderContent = () => {
-    firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).get().then(( snaphot ) => {
+  const renderContent = async () => {
+    let cpData = null;
+    await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).get().then(( snaphot ) => {
       if (snaphot.exists) {
         setData(snaphot.data());
+        cpData = snaphot.data();
       } else {
         console.log("does not exist");
       }
     })
+    let found = false;
+
+    for (const key in cpData) {
+      if (key === formatedDate) {
+        found = true;
+      }
+    }
+    if (!found) {
+      let docId = menu;
+      if (!(docId === "Overview")){
+        await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(docId).update({
+          [formatedDate]: []
+        })
+        updateDatabase(docId);
+      }
+    }
   }
 
-  const prepareData = (data, objectKey, habits, values) => {
-    let found = false;
+  const prepareData = (data, fieldId, habits, values) => {
     for (const key in data) {
-      if (key === objectKey) {
-        found = true;
+      if (key === fieldId) {
         for (const index in data[key]) {
           for (const habit in data[key][index]) {
             habits.push(habit);
@@ -74,6 +92,12 @@ const Habits = () => {
    if (menu === "Overview") {
     prepareData(data, "Daily", habits, values);
     prepareData(data, "Weekly", habits, values);
+
+    const [items, setItems] = useState(habits.map((habit, index) => ({ habit, value: values[index] })));
+
+    const onDragEnd = ({ listData }) => {
+      setItems(listData);
+    };
 
     // Add button
     const addButton = 
@@ -127,22 +151,52 @@ const Habits = () => {
           </TouchableOpacity>
         </View>
       </View>
+
       // List of all current habits
-      const jsx = habits.map((habit, index) =>
+      const renderItem = ({ item, index, drag, isActive }) => (
         <TouchableOpacity
           key={index}
           style={styles.habitDone}
-          onPress={()=> {
-            //funtion to edit habit name
-          }}
-          >
-            <View style={styles.overviewHabits}>
-              <Text style={{textAlign: 'left'}}>{habit}</Text>
-              <Text style={{textAlign: 'right'}}>{values[index]}</Text>
-            </View>
+          onPress={() => console.log(index)}
+        >
+          <View style={styles.overviewHabits}>
+            <Text style={{ textAlign: 'left' }}>{item.habit}</Text>
+            <Text style={{ textAlign: 'right' }}>{item.value}</Text>
+          </View>
         </TouchableOpacity>
       );
-      return <View>{addButton}{addHabitField ? habitField : null}<ScrollView>{jsx}</ScrollView></View>;
+
+      const deleteButton = <TouchableOpacity
+        style={[styles.habitNotDone, {marginBottom: 50, width: 160}]}
+        onPress={()=> {
+          console.log("delete");
+        }}>
+          <Text>Delete</Text>
+        </TouchableOpacity>
+      const editButton = <TouchableOpacity
+      style={[styles.habitNotDone, {marginBottom: 50, width: 160}]}
+      onPress={()=> {
+        console.log("edit");
+      }}>
+        <Text>Edit</Text>
+      </TouchableOpacity>
+      
+      return (
+        <View>
+          {addButton}
+          {addHabitField ? habitField : null}
+          <DraggableFlatList
+            data={items}
+            renderItem={renderItem}
+            keyExtractor={item => item.habit}
+            onDragEnd={onDragEnd}
+          />
+          <View style={{ flexDirection: 'row' }}>
+            {editButton}
+            {deleteButton}
+          </View>
+        </View>
+      );
     } else {
       prepareData(data, formatedDate, habits, values);
       
@@ -162,18 +216,18 @@ const Habits = () => {
   }
 
   const addHabit = async (habit, value) => {
-    const objectKey = value == 7 ? "Daily" : "Weekly";
-    let arr = data[objectKey];
+    const fieldId = value == 7 ? "Daily" : "Weekly";
+    let arr = data[fieldId];
     arr.push({[habit]: value});
     await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).update({
-      [objectKey]: arr
+      [fieldId]: arr
     });
-    await updateDatabase("Daily");
-    await updateDatabase("Weekly");
+    await addHabitDatabase("Daily");
+    await addHabitDatabase("Weekly");
   }
 
-  const updateDatabase = async (menu) => {
-    const objectKey = menu === "Daily" ? formatDate(date, true) : formateWeek(date);
+  const addHabitDatabase = async (menu) => {
+    const fieldId = menu === "Daily" ? formatDate(date, true) : formateWeek(date);
     const habits = [];
     const values = [];
     const oldHabits = [];
@@ -190,14 +244,14 @@ const Habits = () => {
     })
     
     prepareData(data, menu, habits, values);
-    prepareData(oldData, objectKey, oldHabits, oldValues);
+    prepareData(oldData, fieldId, oldHabits, oldValues);
     
     const newHabits = data[menu].map(obj => {
       // Die Angewohnheit des aktuellen Objekts aus arr1
       const habit = Object.keys(obj)[0];
     
       // Der Wert der Angewohnheit im zweiten Array
-      const value = oldData[objectKey]?.find(o => Object.keys(o)[0] === habit);
+      const value = oldData[fieldId]?.find(o => Object.keys(o)[0] === habit);
       
       if (value != null) {
         return value;
@@ -209,8 +263,27 @@ const Habits = () => {
     });
 
     await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).update({
-      [objectKey]: newHabits
+      [fieldId]: newHabits
     });
+  }
+
+  const updateDatabase = async (docId) => {
+    const fieldId = formatedDate;
+    let habits = null;
+    let list = [];
+    await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc("Overview").get().then(( snaphot ) => {
+      habits = snaphot.data();
+    });
+
+    for (const obj of habits[docId]) {
+      const newObj = { [Object.keys(obj)[0]]: false };
+      list.push(newObj);
+    }
+
+    await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).update({
+      [fieldId]: list
+    })
+    renderContent();
   }
 
   /**
@@ -219,11 +292,11 @@ const Habits = () => {
    * @param {boolean} value inidcates wheter the habit is done or not
    */
   const updateHabit = async (index, habit, value) => {
-    let objectKey = formatedDate;
-    let habits = data[objectKey];
+    let fieldId = formatedDate;
+    let habits = data[fieldId];
     habits[index][habit] = !value
     await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).update({
-      [objectKey]: habits
+      [fieldId]: habits
     })
     renderContent();
   }

@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
 import React, {useState} from 'react'
 import { firebase } from '../config'
+import Habits from './Habits'
 
 const Registration = () => {
   const [email, setEmail] = useState('')
@@ -8,7 +9,7 @@ const Registration = () => {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
 
-    registerUser = async (email,password, firstName, lastName) => {
+    const registerUser = async (email,password, firstName, lastName) => {
         await firebase.auth().createUserWithEmailAndPassword(email,password)
         .then(() => {
           firebase.auth().currentUser.sendEmailVerification({
@@ -36,8 +37,25 @@ const Registration = () => {
         .catch((error) => {
             alert(error)
         })
+        initHabits();
     }
 
+    const initHabits = async () => {
+      
+      const habit = {
+        exemple: false
+      };
+      const d = {
+        Daily: []
+      }
+      const w = {
+        Weekly: []
+      }
+      await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc("Daily").set(habit);
+      await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc("Weekly").set(habit);
+      await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc("Overview").set(d);
+      await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc("Overview").update(w);
+    }
 
   return (
     <View style={styles.container}>
