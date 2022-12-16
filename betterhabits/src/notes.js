@@ -31,3 +31,10 @@ const panResponder = PanResponder.create({
   }}
   >
     <View style={
+
+
+
+
+
+obj[habit] = obj.habit3;
+delete obj.habit3;

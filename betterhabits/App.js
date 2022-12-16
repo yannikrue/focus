@@ -70,7 +70,6 @@ function App() {
   
   return (
     <Stack.Navigator>
-      
       <Stack.Screen
         name="Habits"
         component={Habits}

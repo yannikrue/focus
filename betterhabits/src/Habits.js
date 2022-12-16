@@ -3,7 +3,7 @@ import React,{useState, useEffect} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { firebase } from '../config';
 import {Picker} from '@react-native-picker/picker';
-import DraggableFlatList from 'react-native-draggable-flatlist';
+import { DraggableView } from 'react-native-gesture-handler';
 
 
 import Footer from '../components/Footer';
@@ -12,6 +12,7 @@ import { ScrollView, TextInput } from 'react-native-gesture-handler';
 let currentDate = new Date();
 let date = new Date();
 let formatedDate;
+let selectedItems = [];
 
 date.setDate(date.getDate());
 
@@ -22,8 +23,13 @@ const Habits = () => {
   const navigation = useNavigation();
   const [menu, setMenu] = useState("Daily");
   const [addHabitField, setAddHabitField] = useState(false);
-  const [newHabit, setNewHabit] = useState([]);
+  const [newHabit, setNewHabit] = useState();
   const [newHabitValue, setNewHabitValue] = useState("7");
+  const [deleteState, setDeleteState] = useState(false);
+  const [editState, setEditState] = useState(false);
+  const [editFieldState, setEditFieldState] = useState(false);
+  const [editHabit, setEditHabit] = useState();
+
   
   let contentTitle = null;
   
@@ -90,16 +96,10 @@ const Habits = () => {
    const habits = [];
    const values = [];
    if (menu === "Overview") {
-    prepareData(data, "Daily", habits, values);
-    prepareData(data, "Weekly", habits, values);
+     prepareData(data, "Daily", habits, values);
+     prepareData(data, "Weekly", habits, values);
 
-    const [items, setItems] = useState(habits.map((habit, index) => ({ habit, value: values[index] })));
-
-    const onDragEnd = ({ listData }) => {
-      setItems(listData);
-    };
-
-    // Add button
+     // Add button
     const addButton = 
       <TouchableOpacity
       style={styles.habitNotDone}
@@ -151,46 +151,92 @@ const Habits = () => {
           </TouchableOpacity>
         </View>
       </View>
+      
+      const editField = 
+        <View style={styles.editField}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="change habit" 
+            onChangeText={(habit) => setEditHabit(habit)}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
 
       // List of all current habits
-      const renderItem = ({ item, index, drag, isActive }) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.habitDone}
-          onPress={() => console.log(index)}
-        >
-          <View style={styles.overviewHabits}>
-            <Text style={{ textAlign: 'left' }}>{item.habit}</Text>
-            <Text style={{ textAlign: 'right' }}>{item.value}</Text>
-          </View>
-        </TouchableOpacity>
-      );
+      const jsx =  habits.map((habit, index) => 
+        <View key={index}>
+          <TouchableOpacity
+            style={editFieldState[index] ? styles.habitNotDone : styles.habitDone}
+            onPress={() => {
+              if (deleteState === true) {
+                removeHabit(habit, values[index]);
+                setDeleteState(false);
+              } else if (editState === true) {
+                let arr = editFieldState;
+                arr[index] = true;
+                setEditFieldState(arr);
+                renderContent();
+              }
+            }}
+            >
+            <View style={styles.overviewHabits}>
+              <Text style={{ textAlign: 'left' }}>{habit}</Text>
+              <Text style={{ textAlign: 'right' }}>{values[index]}</Text>
+            </View>
+          </TouchableOpacity>
+          {editFieldState[index] ? editField : null}
+        </View>);
 
-      const deleteButton = <TouchableOpacity
-        style={[styles.habitNotDone, {marginBottom: 50, width: 160}]}
-        onPress={()=> {
-          console.log("delete");
-        }}>
+      const deleteButton = (
+        <TouchableOpacity
+          style={[styles.habitDone, {marginBottom: 50, width: 160}, deleteState ? {backgroundColor: 'red'}: null]}
+          onPress={()=> {
+            if (!deleteState && !editState) {
+              setDeleteState(true);
+            } else if (!deleteState && editState) {
+              setEditState(false);
+              setDeleteState(true);
+            } else {
+              setDeleteState(false);
+            }
+          }}>
           <Text>Delete</Text>
-        </TouchableOpacity>
-      const editButton = <TouchableOpacity
-      style={[styles.habitNotDone, {marginBottom: 50, width: 160}]}
-      onPress={()=> {
-        console.log("edit");
-      }}>
+        </TouchableOpacity>);
+
+      const editButton = (
+      <TouchableOpacity
+        style={[editState ? styles.habitNotDone : styles.habitDone, {marginBottom: 50, width: 160}]}
+        onPress={()=> {
+          if (!deleteState && !editState) {
+            setEditState(true);
+            setEditFieldState(Array(habits.length).fill(false))
+          } else if (deleteState && !editState) {
+            setEditState(true);
+            setDeleteState(false);
+            setEditFieldState(Array(habits.length).fill(false))
+          } else {
+            setEditState(false);
+            if (editFieldState.indexOf(true) >= data["Daily"].length) {
+              let i = editFieldState.indexOf(true) - data["Daily"].length;
+              changeHabit(editHabit, "1", i);
+            } else {
+              let i = editFieldState.indexOf(true);
+              changeHabit(editHabit, "7", i);
+            }
+            setEditFieldState(Array(habits.length).fill(false))
+          }
+        }}>
         <Text>Edit</Text>
-      </TouchableOpacity>
-      
+      </TouchableOpacity>);
+
       return (
         <View>
           {addButton}
           {addHabitField ? habitField : null}
-          <DraggableFlatList
-            data={items}
-            renderItem={renderItem}
-            keyExtractor={item => item.habit}
-            onDragEnd={onDragEnd}
-          />
+          <ScrollView>
+            {jsx}
+          </ScrollView>
           <View style={{ flexDirection: 'row' }}>
             {editButton}
             {deleteButton}
@@ -219,6 +265,33 @@ const Habits = () => {
     const fieldId = value == 7 ? "Daily" : "Weekly";
     let arr = data[fieldId];
     arr.push({[habit]: value});
+    await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).update({
+      [fieldId]: arr
+    });
+    await addHabitDatabase("Daily");
+    await addHabitDatabase("Weekly");
+  }
+  
+  const removeHabit = async (habit, value) => {
+    const fieldId = value == 7 ? "Daily" : "Weekly";
+    let arr = data[fieldId];
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].hasOwnProperty(habit)) {
+        arr.splice(i, 1);
+        break;
+      }
+    }
+    await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).update({
+      [fieldId]: arr
+    });
+    await addHabitDatabase("Daily");
+    await addHabitDatabase("Weekly");
+  }
+
+  const changeHabit = async (habit, value, i) => {
+    const fieldId = value === "7" ? "Daily" : "Weekly";
+    let arr = data[fieldId];
+    arr[i] = {[habit]: value}
     await firebase.firestore().collection("data").doc(firebase.auth().currentUser.uid).collection("habits").doc(menu).update({
       [fieldId]: arr
     });
@@ -477,5 +550,9 @@ const styles = StyleSheet.create({
     height: 45,
     justifyContent: 'center',
     borderRadius: 15,
+  },
+  editField: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
