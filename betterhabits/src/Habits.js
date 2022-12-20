@@ -1,9 +1,7 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Dimensions, PanResponder, StyleSheet, Text, View, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import React,{useState, useEffect} from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { firebase } from '../config';
 import {Picker} from '@react-native-picker/picker';
-import { DraggableView } from 'react-native-gesture-handler';
 
 
 import Footer from '../components/Footer';
@@ -12,15 +10,12 @@ import { ScrollView, TextInput } from 'react-native-gesture-handler';
 let currentDate = new Date();
 let date = new Date();
 let formatedDate;
-let selectedItems = [];
 
+currentDate.setDate(currentDate.getDate());
 date.setDate(date.getDate());
 
 const Habits = () => {
-  const [name, setName] = useState([]);
   const [data, setData] = useState([]);
-  const [habits, setHabits] = useState([]);
-  const navigation = useNavigation();
   const [menu, setMenu] = useState("Daily");
   const [addHabitField, setAddHabitField] = useState(false);
   const [newHabit, setNewHabit] = useState();
@@ -28,9 +23,59 @@ const Habits = () => {
   const [deleteState, setDeleteState] = useState(false);
   const [editState, setEditState] = useState(false);
   const [editFieldState, setEditFieldState] = useState(false);
-  const [editHabit, setEditHabit] = useState();
-
+  const [editHabit, setEditHabit] = useState("");
   
+  const SWIPE_THRESHOLD = 150;
+  const SWIPE_DIRECTION = 'horizontal';
+  const SWIPE_DISTANCE = '10%';
+  const elementWidth = Dimensions.get('window').width;
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: (evt, gestureState) => true,
+    onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+    onMoveShouldSetPanResponder: (evt, gestureState) => true,
+    onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+
+    onPanResponderMove: (evt, gestureState) => {},
+    onPanResponderTerminationRequest: (evt, gestureState) => true,
+    onPanResponderRelease: (evt, gestureState) => {
+      // Check if the user swiped far enough and in the correct direction
+      if (SWIPE_DIRECTION === 'horizontal' || SWIPE_DIRECTION === 'right') {
+        if (gestureState.dx > SWIPE_THRESHOLD && gestureState.dx > (SWIPE_DISTANCE.indexOf('%') !== -1 ? elementWidth * (parseInt(SWIPE_DISTANCE, 10) / 100) : SWIPE_DISTANCE)) {
+          onSwipeRight();
+        }
+      }
+      if (SWIPE_DIRECTION === 'horizontal' || SWIPE_DIRECTION === 'left') {
+        if (gestureState.dx < -SWIPE_THRESHOLD && gestureState.dx < -(SWIPE_DISTANCE.indexOf('%') !== -1 ? elementWidth * (parseInt(SWIPE_DISTANCE, 10) / 100) : SWIPE_DISTANCE)) {
+          onSwipeLeft();
+        }
+      }
+    },
+    onPanResponderTerminate: (evt, gestureState) => {
+      // Another component has become the responder, so this gesture
+      // should be cancelled
+    },
+    onShouldBlockNativeResponder: (evt, gestureState) => {
+      // Returns whether this component should block native components from becoming the JS
+      // responder. Returns true by default. Is currently only supported on android.
+      return true;
+    },
+  });
+
+  const onSwipeRight = () => {
+    if (date.getDate() - currentDate.getDate() >= 0){
+      date.setDate(date.getDate()-1);
+      renderContent();
+    }
+  }
+  
+  const onSwipeLeft = () => {
+    if (currentDate.getDate() - date.getDate() >= 0) {
+      date.setDate(date.getDate()+1);
+      renderContent();
+    }
+  }
+
   let contentTitle = null;
   
   if (menu === "Daily") {
@@ -153,7 +198,7 @@ const Habits = () => {
       </View>
       
       const editField = 
-        <View style={styles.editField}>
+        <KeyboardAvoidingView style={styles.editField}>
           <TextInput
             style={styles.textInput}
             placeholder="change habit" 
@@ -161,7 +206,7 @@ const Habits = () => {
             autoCapitalize="none"
             autoCorrect={false}
           />
-        </View>
+        </KeyboardAvoidingView>
 
       // List of all current habits
       const jsx =  habits.map((habit, index) => 
@@ -219,10 +264,14 @@ const Habits = () => {
             setEditState(false);
             if (editFieldState.indexOf(true) >= data["Daily"].length) {
               let i = editFieldState.indexOf(true) - data["Daily"].length;
-              changeHabit(editHabit, "1", i);
+              if (editHabit.length > 0) {
+                changeHabit(editHabit, "1", i);
+              }
             } else {
               let i = editFieldState.indexOf(true);
-              changeHabit(editHabit, "7", i);
+              if (editHabit.length > 0) {
+                changeHabit(editHabit, "7", i);
+              }
             }
             setEditFieldState(Array(habits.length).fill(false))
           }
@@ -257,7 +306,7 @@ const Habits = () => {
           <Text>{habit}</Text>
         </TouchableOpacity>
       );
-      return <ScrollView>{jsx}</ScrollView>
+      return <ScrollView {...panResponder.panHandlers}>{jsx}</ScrollView>
     }
   }
 

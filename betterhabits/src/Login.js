@@ -1,12 +1,15 @@
-import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
+import { KeyboardAvoidingView, View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
 import React, {useState} from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { firebase } from '../config'
 
 const Login = () => {
     const navigation = useNavigation()
-    const [email, setEmail] = useState()
-    const [password, setPassword] = useState()
+    // const [email, setEmail] = useState()
+    // const [password, setPassword] = useState()
+    
+    const [email, setEmail] = useState("yannik.rue@gmail.com")
+    const [password, setPassword] = useState("nkl02Zitabetterhabits")
 
     loginUser = async (email,password) => {
       // take out password
@@ -27,13 +30,13 @@ const Login = () => {
             alert(error)
         })
     }
-
+//@
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView style={styles.container}>
         <Text style={{fontWeight:'bold', fontSize:26,}}>
           Login
         </Text>
-        <View style={{marginTop:40}}>
+        <KeyboardAvoidingView style={{marginTop:40}}>
           <TextInput style={styles.textInput} 
             placeholder="Email" 
             onChangeText={(email) => setEmail(email)}
@@ -47,7 +50,7 @@ const Login = () => {
             autoCapitalize="none"
             secureTextEntry={true}
           />
-        </View>
+        </KeyboardAvoidingView>
         <TouchableOpacity
             onPress={()=>loginUser(email,password)}
             style={styles.button}
@@ -72,7 +75,7 @@ const Login = () => {
           </Text>
           
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     )
 }
 
