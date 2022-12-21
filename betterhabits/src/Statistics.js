@@ -144,7 +144,7 @@ const Statistics = () => {
           <Text>Percentage: {todayPercent}%</Text>
         </View>
         <View style={styles.days}>
-          <Text>Yesterdays Stats</Text>
+          <Text>Yesterday's Stats</Text>
           <Text></Text>
           <Text>Total: {yesterdayLength}</Text>
           <Text>Completed: {yesterdayCount}</Text>
@@ -251,7 +251,7 @@ const Statistics = () => {
           <Text>Percentage: {Math.round(thisWeekCount * 100 / thisWeekLength)}%</Text>
         </View>
         <View style={styles.days}>
-          <Text>Last Week Stats</Text>
+          <Text>Last Week's Stats</Text>
           <Text></Text>
           <Text>Total: {lastWeekLength}</Text>
           <Text>Completed: {lastWeekCount}</Text>

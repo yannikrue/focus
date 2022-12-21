@@ -11,7 +11,7 @@ const LineChart = ({ data, stroke, strokeWidth }) => {
 
   return (
     <View style={styles.container}>
-        <Text style={styles.text}>Dailys improvement</Text>
+        <Text style={styles.text}>Daily improvements</Text>
         <Svg style={styles.plot}>
             <Path d={pathData} stroke={stroke} strokeWidth={strokeWidth} />
         </Svg>
