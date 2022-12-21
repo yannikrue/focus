@@ -7,8 +7,15 @@ View your habit statistics, including the total number of habits completed and t
 View a graph of your habit completion percentage over time
 To get started, simply sign in with your email and password or create a new account. Then, add your habits and start marking them as complete as you go about your day. You can view your habit statistics at any time to see how you're doing and track your progress.
 
-![Screenshot 1](./betterhabits/screenshots/auth.png)
-![Screenshot 2](./betterhabits/screenshots/daily.png)
-![Screenshot 3](./betterhabits/screenshots/weekly.png)
-![Screenshot 4](./betterhabits/screenshots/stats.png)
-![Screenshot 5](./betterhabits/screenshots/plot.png)
+## Screenshots
+
+<div>
+  <img src="./betterhabits/screenshots/auth.png" alt="Screenshot 1" width="200"/>
+  <img src="./betterhabits/screenshots/daily.png" alt="Screenshot 2" width="200"/>
+  <img src="./betterhabits/screenshots/weekly.png" alt="Screenshot 3" width="200"/>
+</div>
+<div>
+  <img src="./betterhabits/screenshots/stats.png" alt="Screenshot 4" width="200"/>
+  <img src="./betterhabits/screenshots/plot.png" alt="Screenshot 5" width="200"/>
+</div>
+
