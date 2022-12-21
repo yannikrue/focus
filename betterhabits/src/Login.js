@@ -5,11 +5,8 @@ import { firebase } from '../config'
 
 const Login = () => {
     const navigation = useNavigation()
-    // const [email, setEmail] = useState()
-    // const [password, setPassword] = useState()
-    
-    const [email, setEmail] = useState("yannik.rue@gmail.com")
-    const [password, setPassword] = useState("nkl02Zitabetterhabits")
+    const [email, setEmail] = useState()
+    const [password, setPassword] = useState()
 
     loginUser = async (email,password) => {
       // take out password
