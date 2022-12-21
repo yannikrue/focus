@@ -1,4 +1,5 @@
 Habit Tracker
+
 Welcome to Habit Tracker, a simple and easy-to-use app for tracking and improving your daily habits. With Habit Tracker, you can:
 
 Keep track of your habits and mark them as complete when you've done them
