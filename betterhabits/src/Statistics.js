@@ -154,57 +154,10 @@ const Statistics = () => {
   
       return jsx;
     } else if (menu === "Plot") {
-      let value = [0];
-      let updateArr = dailyPlot.values;
-      let l = 0;
-      let maxDay;
-      let maxDayLength = 0;
-      let count = 0;
-      let percentage = 0;
-      let twoDays = new Date();
-      twoDays.setDate(twoDays.getDate()-2);
       
-      if (dailyPlot != null) {
-        for (const day in dailyPlot.values) {
-          for (const key of Object.keys(dailyPlot.values[day])) {
-            if (day == dailyPlot.values.length - 1) {
-              maxDay = key;
-            }
-            value.push(dailyPlot.values[day][key])
-          }
-        }
-        while (moment(formatDate(twoDays, true), "DD-MM-YYYY").isAfter(moment(maxDay, "DD-MM-YYYY"))) {
-          count = 0;
-          maxDay = moment(maxDay, "DD-MM-YYYY").add(1, 'day').format("DD-MM-YYYY");
-          for (const day in dailyData) {
-            if (day === maxDay) {
-              maxDayLength = dailyData[day].length;
-              for (const habit in dailyData[day]) {
-                for (let key of Object.keys(dailyData[day][habit])) {
-                  if (dailyData[day][habit][key] === true) {
-                    count++;
-                  }
-                }
-              }
-              percentage = Math.round(count * 100 / maxDayLength)
-              value.push(percentage)
-              updateArr.push({
-                [maxDay]: percentage
-              })
-            }
-          }
-        }
-        updateStats(updateArr);
-        if (yesterdayPercent != null) {
-          value.push(yesterdayPercent);
-        }
-        // if (todayPercent != null) {
-        //   value.push(todayPercent);
-        // }
-      }
       const jsx =
       <View style={styles.dailyContainer}>
-        <LineChart data={value} stroke="#7158e2" strokeWidth={8} />
+        <Text>Hier kommt die heatmap</Text>
       </View>
 
       return jsx;

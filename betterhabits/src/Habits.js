@@ -227,7 +227,7 @@ const Habits = () => {
             >
             <View style={styles.overviewHabits}>
               <Text style={{ textAlign: 'left' }}>{habit}</Text>
-              <Text style={{ textAlign: 'right' }}>{values[index]}</Text>
+              <Text style={{ textAlign: 'right' }}>{"Daily"}</Text>
             </View>
           </TouchableOpacity>
           {editFieldState[index] ? editField : null}
